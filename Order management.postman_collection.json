@@ -1,0 +1,236 @@
+{
+	"info": {
+		"_postman_id": "c2039f4e-ec4b-4934-a8e3-347f7185670a",
+		"name": "Order management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35196706"
+	},
+	"item": [
+		{
+			"name": "Generate reference",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"",
+							"",
+							"pm.test(\"Should contain reference id\", function () {",
+							"    pm.expect(response.uuid).to.exist;",
+							"});",
+							"",
+							"pm.globals.set(\"referenceId\", response.uuid);",
+							"",
+							"// returns",
+							"// {",
+							"//     \"uuid\": \"9d33d85e-9680-4784-b7d1-b3a566642936\"",
+							"// }"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "httpbin.org/uuid",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"uuid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Modified in lesson 239 to include isValid check",
+							"const response = pm.response.json();",
+							"",
+							"// previously when it was running only with iterationData (from provided json file with no local varaibles)",
+							"//if (pm.iterationData.get(\"isValid\")){",
+							"// it's if is == \"true\" because in this case \"true\" is a string not a boolean i think.",
+							"if (pm.variables.get(\"isValid\") == \"true\"){",
+							"",
+							"pm.test(\"Should contain the reference id\", function () {",
+							"    pm.expect(response.json.referenceId).to.eql(pm.globals.get(\"referenceId\"));",
+							"});",
+							"",
+							"pm.test(\"Should contain the customer id\", function () {",
+							"    pm.expect(response.json.customerId).to.eql(parseInt(pm.variables.get(\"customerId\")));",
+							"});",
+							"",
+							"pm.test(\"Should contain the product id\", function () {",
+							"    pm.expect(response.json.productId).to.eql(parseInt(pm.variables.get(\"productId\")));",
+							"});",
+							"",
+							"}",
+							"else {",
+							"    pm.test(\"Not valid data\", () => {",
+							"        pm.expect(response.json).to.be.null",
+							"    })",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"metaInfo\", JSON.stringify(pm.iterationData.get(\"meataInfo\")))"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"referenceId\": \"{{referenceId}}\",\n\t\"customerId\": {{customerId}},\n\t\"productId\": {{productId}},\n    \"metaInfo\": {{metaInfo}}\n}"
+				},
+				"url": {
+					"raw": "httpbin.org/post",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(`Status code is ${pm.iterationData.get(\"expectStatus\")}`, function () {",
+							"    pm.response.to.have.status(pm.iterationData.get(\"expectStatus\"));",
+							"});",
+							"",
+							"// This probably also works.",
+							"// pm.test(\"Status code is\" + pm.iterationData.get(\"expectStatus\")}, function () {",
+							"//     pm.response.to.have.status(pm.iterationData.get(\"expectStatus\"));",
+							"// });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "httpbin.org/status/{{status}}",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"status",
+						"{{status}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"// This is designed to run with the added file for orderManagementData.json. I left it in udemny coursed in external hardrive.\r",
+					"// It looks like this though\r",
+					"// when doing multiple itterations everthing needs to be ne an array []\r",
+					"//remember you can prieview the data after selectin a file to add in the runner.\r",
+					"// These values can be used directly in the \"body\" of a request with {{}}\r",
+					"\r",
+					"// [\r",
+					"//     {\r",
+					"//         \"customerId\": 9000, \r",
+					"//         \"productId\": 4\r",
+					"//     },\r",
+					"//     {\r",
+					"//         \"customerId\": 1337,\r",
+					"//         \"productId\": 2\r",
+					"//     }, \r",
+					"//     {\r",
+					"//         \"customerId\": 42069,\r",
+					"//         \"productId\": 3\r",
+					"//     }\r",
+					"// ]"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "customerId",
+			"value": "100",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "200",
+			"type": "string"
+		},
+		{
+			"key": "isValid",
+			"value": "true",
+			"type": "string"
+		}
+	]
+}
